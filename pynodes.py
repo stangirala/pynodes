@@ -1,8 +1,10 @@
 from abc import ABCMeta, abstractmethod
+import concurrent.futures
+import time
 
 class Node(metaclass=ABCMeta):
     @abstractmethod
-    def execute():
+    def execute(args):
         # Inputs => Output
         pass
 
@@ -23,22 +25,21 @@ class Graph:
 
     def executeGraph(self):
         node = self.root
-
-        # does not accept args yet
-        out = node.execute()
-        while node in self.edges and self.edges[node] is not None:
-            # assumes linked list currently
-            node = self.edges[node]
-            out = node.execute()
-        return out
+        with concurrent.futures.ProcessPoolExecutor() as executors:
+            while node in self.edges and self.edges[node] is not None:
+                # assumes linked list currently
+                outFuture = executors.submit(node.execute, None)
+                node = self.edges[node]
+            return outFuture.result()
 
 class A(Node):
-    def execute(args):
+    def execute(self, args):
+        time.sleep(5)
         print('hello')
         return 1
 
 class B(Node):
-    def execute(args):
+    def execute(self, args):
         if args == 1:
             print('world')
         else:
