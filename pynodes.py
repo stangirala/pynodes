@@ -1,44 +1,44 @@
 from abc import ABCMeta, abstractmethod
 import concurrent.futures
 import time
+from collections import defaultdict
+import queue
+
+from graph import Graph, GraphNode
 
 class Node(metaclass=ABCMeta):
+    def setName(self, name):
+        self.name = name
+
     @abstractmethod
     def execute(args):
         # Inputs => Output
         pass
 
-class Graph:
-    # does graph stuff
-    def __init__(self, root):
-        # lets have a root for now and sort later.
-        self.edges = {}
-        self.nodes = set()
-        self.root = root
-
-    def connect(self, a, b):
-        # does not check for cycles
-        self.edges[a] = b
-        self.edges[b] = None
-        self.nodes.add(a)
-        self.nodes.add(b)
-
-    def executeGraph(self):
-        node = self.root
-        with concurrent.futures.ProcessPoolExecutor() as executors:
-            while node in self.edges and self.edges[node] is not None:
-                # assumes linked list currently
-                outFuture = executors.submit(node.execute, None)
-                node = self.edges[node]
-            return outFuture.result()
-
 class A(Node):
-    def execute(self, args):
-        time.sleep(5)
-        print('hello')
-        return 1
+    def __init__(self, val, name):
+        self.val = val
+        self.setName(name)
+    def execute(self):
+        if self.val == 1:
+            return 1
+        else:
+            return 0
 
 class B(Node):
+    def __init__(self, name):
+        self.setName(name)
+
+    def execute(self, args):
+        if args == 1:
+            return 'world'
+        else:
+            return 'words'
+
+class C(Node):
+    def __init__(self, name):
+        self.setName(name)
+
     def execute(self, args):
         if args == 1:
             print('world')
@@ -47,9 +47,19 @@ class B(Node):
         return None
 
 if __name__ == '__main__':
-    a = A()
-    b = B()
+    a = GraphNode(A(1, 'a'))
+    b = GraphNode(B('b'))
+    c = GraphNode(A(2, 'c'))
+    b1 = GraphNode(B('b1'))
+    b2 = GraphNode(B('b2'))
 
     g = Graph(a)
-    g.connect(a, b)
-    print(g.executeGraph())
+    g.connect(a, [b, c])
+    g.connect(c, [b1])
+    g.connect(c, [b2])
+    g.connect(b1, [b2])
+    g.connect(b2, [b1])
+
+    #print(g.executeGraph())
+    print(Graph.sortGraph(g))
+    print(Graph.isCycleInGraph(g))
