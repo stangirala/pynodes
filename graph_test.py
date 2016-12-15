@@ -85,7 +85,7 @@ class GraphTest(TestCase):
         for level in range(len(tiers)):
             self.assertTrue(len(expectedNodeList[level]) == len(tiers[level]), "Tier nodes have different lenghts")
             for actual in tiers[level]:
-                self.assertTrue(actual[0] in expectedNodeList[level], "Unexpected node found in tier")
+                self.assertTrue(actual[0].name in expectedNodeList[level], "Unexpected node found in tier")
 
 
 if __name__ == '__main__':
