@@ -36,27 +36,34 @@ class Graph:
         for childGraphNode in childrenGraphNodes:
             self.nodes.add(childGraphNode)
 
-    #def executeGraph(self):
-    #    # sort graph first
-    #    # collect batchs to execute dependencies
-    #    # store intermedieate tier futures
-    #    q = queue.Queue()
+    @staticmethod
+    def executeGraph(graph):
+        sortedNodes = Graph.sortGraph(graph)
 
-    #    node = self.root
-    #    q.put(node)
-    #    with concurrent.futures.ProcessPoolExecutor() as executors:
-    #        while not q.empty():
-    #            head = q.get()
-    #            while self.edges[node] is not set():
-    #                for edge in self.edges[node]:
-    #                    q.put(edge)
+        if len(sortedNodes == 0):
+            return
 
-    #        while self.edges[node] is not []:
-    #            # does not collect data at the lowest level
-    #            children = self.edges[node]
-    #            outFuture = executors.submit(node.execute, None)
-    #            node = self.edges[node]
-    #        return outFuture.result()
+        sortedNodes.append((GraphNode("sentinel"), sortedNodes[-1][1]+1))
+        tier = defaultdict(list)
+        tierLevel = 0
+        i = 0
+        while i < len(sortedNodes)-1:
+            tier[tierLevel].append(sortedNodes[i])
+            if not sortedNodes[i][1] == sortedNodes[i+1][1]:
+                tierLevel += 1
+            i += 1
+
+        with concurrent.futures.ProcessPoolExecutor() as executors:
+            for level in xrange(tierLevel):
+                for tierNode in tierLevel[level]:
+                    if len(node.parent) == 0:
+                        outFuture = executors.submit(node.execute, None)
+                    else:
+                        outFuture = executors.submit(node.execute, node.parent[0].future.get())
+                    node.future = outFuture
+
+                while len([tierNode for tierNode in tierLevel[level] if tierNode.future.done()]) != len(tierLevel[level]):
+                    time.sleep(1)
 
     @staticmethod
     def sortGraph(graph):
