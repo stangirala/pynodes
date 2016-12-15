@@ -1,0 +1,2 @@
+- https://github.com/twitter/nodes
+- Missing circuit breakers, timeouts and backoffs
