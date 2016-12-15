@@ -47,19 +47,18 @@ class C(Node):
         return None
 
 if __name__ == '__main__':
-    a = GraphNode(A(1, 'a'))
-    b = GraphNode(B('b'))
-    c = GraphNode(A(2, 'c'))
-    b1 = GraphNode(B('b1'))
-    b2 = GraphNode(B('b2'))
+    a = GraphNode('a', A(1, 'a'))
+    b = GraphNode('b', B('b'))
+    c = GraphNode('c', A(2, 'c'))
+    b1 = GraphNode('b1', B('b1'))
+    b2 = GraphNode('b2', B('b2'))
 
     g = Graph(a)
     g.connect(a, [b, c])
     g.connect(c, [b1])
     g.connect(c, [b2])
     g.connect(b1, [b2])
-    g.connect(b2, [b1])
 
-    #print(g.executeGraph())
-    print(Graph.sortGraph(g))
-    print(Graph.isCycleInGraph(g))
+    Graph.executeGraph(g)
+
+    print(b2.future.result())

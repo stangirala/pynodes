@@ -42,25 +42,26 @@ class Graph:
         tierLevels = len(tiers)
 
         with concurrent.futures.ProcessPoolExecutor() as executors:
-            for level in xrange(tierLevels):
+            for level in range(tierLevels):
                 for tierNode in tiers[level]:
-                    if len(node.parent) == 0:
-                        outFuture = executors.submit(node.execute, None)
+                    if len(tierNode[0].parent) == 0:
+                        outFuture = executors.submit(tierNode[0].node.execute, None)
                     else:
-                        outFuture = executors.submit(node.execute, node.parent[0].future.get())
-                    node.future = outFuture
+                        # currently ignores other parents
+                        outFuture = executors.submit(tierNode[0].execute, tierNode[0].parent[0].future.result())
+                    tierNode[0].future = outFuture
 
-                while len([tierNode for tierNode in tiers[level] if tierNode.future.done()]) != len(tiers[level]):
+                while len([tierNode for tierNode in tiers[level] if tierNode[0].future.done()]) != len(tiers[level]):
                     time.sleep(1)
 
     @staticmethod
     def sortGraph(graph):
         if Graph.isCycleInGraph(graph):
-            return None
+            return []
 
         edgeCounts = list(graph.edgeCounts.items())
         edgeCounts.sort(key=lambda x: x[1])
-        return [(tup[0].name, tup[1]) for tup in edgeCounts]
+        return edgeCounts
 
     @staticmethod
     def getSortedTiers(graph):
