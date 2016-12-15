@@ -67,7 +67,26 @@ class GraphTest(TestCase):
             self.assertTrue(sortedList[i][1] <= sortedList[i+1][1], "List is not sorted")
             i += 1
 
-        #self.assertEquals(Graph.sortGraph(g), ['a', 'b', 'c', 'b1', 'b2'], 'Sorting is not correct')
+    def testGetSortedTiers(self):
+        a = GraphNode('a')
+        b = GraphNode('b')
+        c = GraphNode('c')
+        b1 = GraphNode('b1')
+        b2 = GraphNode('b2')
+
+        g = Graph(a)
+        g.connect(a, [b, c])
+        g.connect(c, [b1])
+        g.connect(c, [b2])
+        g.connect(b1, [b2])
+
+        tiers = Graph.getSortedTiers(g)
+        expectedNodeList = [['a'], ['b', 'c'], ['b1'], ['b2']]
+        for level in range(len(tiers)):
+            self.assertTrue(len(expectedNodeList[level]) == len(tiers[level]), "Tier nodes have different lenghts")
+            for actual in tiers[level]:
+                self.assertTrue(actual[0] in expectedNodeList[level], "Unexpected node found in tier")
+
 
 if __name__ == '__main__':
         a = GraphNode('a')
@@ -82,6 +101,5 @@ if __name__ == '__main__':
         g.connect(c, [b2])
         g.connect(b1, [b2])
         g.connect(b2, [b1])
+        print(Graph.getSortedTiers(g))
 
-        for i in range(100):
-            assert Graph.isCycleInGraph(g) == True

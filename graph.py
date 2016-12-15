@@ -38,31 +38,19 @@ class Graph:
 
     @staticmethod
     def executeGraph(graph):
-        sortedNodes = Graph.sortGraph(graph)
-
-        if len(sortedNodes == 0):
-            return
-
-        sortedNodes.append((GraphNode("sentinel"), sortedNodes[-1][1]+1))
-        tier = defaultdict(list)
-        tierLevel = 0
-        i = 0
-        while i < len(sortedNodes)-1:
-            tier[tierLevel].append(sortedNodes[i])
-            if not sortedNodes[i][1] == sortedNodes[i+1][1]:
-                tierLevel += 1
-            i += 1
+        tiers = Graph.getSortedTiers(graph)
+        tierLevels = len(tiers)
 
         with concurrent.futures.ProcessPoolExecutor() as executors:
-            for level in xrange(tierLevel):
-                for tierNode in tierLevel[level]:
+            for level in xrange(tierLevels):
+                for tierNode in tiers[level]:
                     if len(node.parent) == 0:
                         outFuture = executors.submit(node.execute, None)
                     else:
                         outFuture = executors.submit(node.execute, node.parent[0].future.get())
                     node.future = outFuture
 
-                while len([tierNode for tierNode in tierLevel[level] if tierNode.future.done()]) != len(tierLevel[level]):
+                while len([tierNode for tierNode in tiers[level] if tierNode.future.done()]) != len(tiers[level]):
                     time.sleep(1)
 
     @staticmethod
@@ -70,6 +58,25 @@ class Graph:
         edgeCounts = list(graph.edgeCounts.items())
         edgeCounts.sort(key=lambda x: x[1])
         return [(tup[0].name, tup[1]) for tup in edgeCounts]
+
+    @staticmethod
+    def getSortedTiers(graph):
+        sortedNodes = Graph.sortGraph(graph)
+
+        if len(sortedNodes) == 0:
+            return
+
+        sortedNodes.append((GraphNode("sentinel"), sortedNodes[-1][1]+1))
+        tiers = defaultdict(list)
+        tierLevel = 0
+        i = 0
+        while i < len(sortedNodes)-1:
+            tiers[tierLevel].append(sortedNodes[i])
+            if not sortedNodes[i][1] == sortedNodes[i+1][1]:
+                tierLevel += 1
+            i += 1
+
+        return tiers
 
     @staticmethod
     def isCycleInGraph(graph, prev=None, visitedNodes=[]):
@@ -82,8 +89,6 @@ class Graph:
             return False
         else:
             children = graph.edges[prev]
-            #if len(children) == 0:
-                #print([i.name for i in visitedNodes])
             for child in children:
                 if child in visitedNodes:
                     return True
