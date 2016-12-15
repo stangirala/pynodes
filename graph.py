@@ -55,6 +55,9 @@ class Graph:
 
     @staticmethod
     def sortGraph(graph):
+        if Graph.isCycleInGraph(graph):
+            return None
+
         edgeCounts = list(graph.edgeCounts.items())
         edgeCounts.sort(key=lambda x: x[1])
         return [(tup[0].name, tup[1]) for tup in edgeCounts]
