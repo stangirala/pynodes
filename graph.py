@@ -27,8 +27,8 @@ class Graph:
         parentGraphNode = parentNode
         childrenGraphNodes = childrenNodes
 
-        map(lambda x: x.parent.append(parentGraphNode), childrenGraphNodes)
         for childGraphNode in childrenGraphNodes:
+            childGraphNode.parent.append(parentGraphNode)
             self.edgeCounts[childGraphNode] += self.edgeCounts[parentGraphNode] + 1
             self.edges[parentGraphNode].add(childGraphNode)
 
