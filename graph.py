@@ -21,6 +21,9 @@ class GraphNode:
     def getName(self):
         return self.node.name
 
+    def registerParent(self, parentGraphNode):
+        self.parent.append(parentGraphNode)
+
 class Graph:
     # does graph stuff
     def __init__(self, root):
@@ -36,7 +39,7 @@ class Graph:
         childrenGraphNodes = childrenNodes
 
         for childGraphNode in childrenGraphNodes:
-            childGraphNode.parent.append(parentGraphNode)
+            childGraphNode.registerParent(parentGraphNode)
             self.edgeCounts[childGraphNode] += self.edgeCounts[parentGraphNode] + 1
             self.edges[parentGraphNode].add(childGraphNode)
 
@@ -51,13 +54,14 @@ class Graph:
 
         with concurrent.futures.ProcessPoolExecutor() as executors:
             for level in range(tierLevels):
-                for tierNode in tiers[level]:
-                    if len(tierNode[0].parent) == 0:
-                        outFuture = executors.submit(tierNode[0].node.execute, None)
+                for tierNode, _ in tiers[level]:
+                    if len(tierNode.parent) == 0:
+                        outFuture = executors.submit(tierNode.node.execute, None)
                     else:
-                        # currently ignores other parents
-                        outFuture = executors.submit(tierNode[0].node.execute, tierNode[0].parent[0].future.result())
-                    tierNode[0].future = outFuture
+                        nodeParents = tierNode.parent
+                        parentArgs = [parent.future.result() for parent in nodeParents]
+                        outFuture = executors.submit(tierNode.node.execute, parentArgs)
+                    tierNode.future = outFuture
 
                 # Wait while tier finishes
                 while len([tierNode for tierNode in tiers[level] if tierNode[0].future.done()]) != len(tiers[level]):

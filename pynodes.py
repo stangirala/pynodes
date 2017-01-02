@@ -22,29 +22,14 @@ class B(Node):
         self.setName(name)
 
     def execute(self, args):
-        if args == 1:
+        if args[0] == 1:
             return 'world'
-        else:
+        elif len(args) > 1 and args[1] == 1:
             return 'words'
+        else:
+            return 'heckles'
 
 def one():
-    a = GraphNode('a', A(1, 'a'))
-    b = GraphNode('b', B('b'))
-    c = GraphNode('c', A(2, 'c'))
-    b1 = GraphNode('b1', B('b1'))
-    b2 = GraphNode('b2', B('b2'))
-
-    g = Graph(a)
-    g.connect(a, [b, c])
-    g.connect(c, [b1])
-    g.connect(c, [b2])
-    g.connect(b1, [b2])
-
-    Graph.executeGraph(g)
-
-    assert b2.future.result() == 'words'
-
-def two():
     a = GraphNode('a', A(1, 'a'))
     b = GraphNode('b', B('b'))
     c = GraphNode('c', A(1, 'c'))
@@ -61,6 +46,41 @@ def two():
 
     assert b2.future.result() == 'world'
 
+def two():
+    a = GraphNode('a', A(1, 'a'))
+    b = GraphNode('b', B('b'))
+    c = GraphNode('c', A(1, 'c'))
+    b1 = GraphNode('b1', A(1, 'b1'))
+    b2 = GraphNode('b2', B('b2'))
+
+    g = Graph(a)
+    g.connect(a, [b, c])
+    g.connect(c, [b1])
+    g.connect(c, [b2])
+    g.connect(b1, [b2])
+
+    Graph.executeGraph(g)
+
+    assert b2.future.result() == 'world'
+
+def three():
+    a = GraphNode('a', A(1, 'a'))
+    b = GraphNode('b', B('b'))
+    c = GraphNode('c', A(9, 'c'))
+    b1 = GraphNode('b1', A(2, 'b1'))
+    b2 = GraphNode('b2', B('b2'))
+
+    g = Graph(a)
+    g.connect(a, [b, c])
+    g.connect(c, [b1])
+    g.connect(c, [b2])
+    g.connect(b1, [b2])
+
+    Graph.executeGraph(g)
+
+    assert b2.future.result() == 'heckles'
+
 if __name__ == '__main__':
   one()
   two()
+  three()
