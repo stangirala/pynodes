@@ -3,6 +3,14 @@ import concurrent.futures
 import time
 from collections import defaultdict
 
+class Node(metaclass=ABCMeta):
+    def setName(self, name):
+        self.name = name
+
+    @abstractmethod
+    def execute(self, args):
+        pass
+
 class GraphNode:
     def __init__(self, name, node=None):
         self.node = node
@@ -48,11 +56,12 @@ class Graph:
                         outFuture = executors.submit(tierNode[0].node.execute, None)
                     else:
                         # currently ignores other parents
-                        outFuture = executors.submit(tierNode[0].execute, tierNode[0].parent[0].future.result())
+                        outFuture = executors.submit(tierNode[0].node.execute, tierNode[0].parent[0].future.result())
                     tierNode[0].future = outFuture
 
+                # Wait while tier finishes
                 while len([tierNode for tierNode in tiers[level] if tierNode[0].future.done()]) != len(tiers[level]):
-                    time.sleep(1)
+                    time.sleep(0.1)
 
     @staticmethod
     def sortGraph(graph):
