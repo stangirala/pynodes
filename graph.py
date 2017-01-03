@@ -78,6 +78,7 @@ class Graph:
 
     @staticmethod
     def getSortedTiers(graph):
+        # Did not know this existed: https://en.wikipedia.org/wiki/Coffman%E2%80%93Graham_algorithm
         sortedNodes = Graph.sortGraph(graph)
 
         if len(sortedNodes) == 0:
